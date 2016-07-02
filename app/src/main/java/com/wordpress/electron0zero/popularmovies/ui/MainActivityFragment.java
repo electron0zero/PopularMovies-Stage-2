@@ -13,10 +13,12 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 
 import com.wordpress.electron0zero.popularmovies.R;
+import com.wordpress.electron0zero.popularmovies.custom_adapters.GridAdapter;
 import com.wordpress.electron0zero.popularmovies.data.MovieContract;
 import com.wordpress.electron0zero.popularmovies.model.Movie;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -29,15 +31,6 @@ public class MainActivityFragment extends Fragment {
 
     private ArrayList<Movie> mMovies = null;
 
-    private static final String[] FAV_COLUMNS = {
-            MovieContract.FavEntry._ID,
-            MovieContract.FavEntry.COLUMN_MOVIE_ID,
-            MovieContract.FavEntry.COLUMN_MOVIE_TITLE,
-            MovieContract.FavEntry.COLUMN_RELEASE_DATE,
-            MovieContract.FavEntry.COLUMN_POSTER_PATH,
-            MovieContract.FavEntry.COLUMN_VOTE_AVERAGE,
-            MovieContract.FavEntry.COLUMN_PLOT
-    };
     
     public static final int COL_ID = 0;
     public static final int COL_MOVIE_ID = 1;
@@ -106,5 +99,26 @@ public class MainActivityFragment extends Fragment {
 
         return inflater.inflate(R.layout.fragment_main, container, false);
     }
-    // TODO: 01-07-16 line 191 
+    // TODO: 01-07-16 line 191
+
+    public void ShowMovies(List<Movie> movies){
+        //puts movies into adaptor
+        if (movies != null) {
+            if (mGridAdapter != null) {
+                mGridAdapter.setData(movies);
+            }
+            mMovies = new ArrayList<>();
+            mMovies.addAll(movies);
+        }
+    }
+
+    public void ShowFavMovies(List<Movie> movies){
+        if (movies != null) {
+            if (mGridAdapter != null) {
+                mGridAdapter.setData(movies);
+            }
+            mMovies = new ArrayList<>();
+            mMovies.addAll(movies);
+        }
+    }
 }

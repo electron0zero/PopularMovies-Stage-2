@@ -19,10 +19,11 @@ public class Movie implements Parcelable {
     private int vote_avg; // vote_average
     private String plot; //plot
 
+    //movie() is overloaded
     public Movie() {
-
     }
 
+    //when we get data from api for popular and top rated movies we will pass JSONObject
     public Movie(JSONObject movie) throws JSONException {
         this.movie_id = movie.getInt("id");
         this.movie_title = movie.getString("original_title");
@@ -33,6 +34,7 @@ public class Movie implements Parcelable {
 
     }
 
+    //when we ask for favorite movies we will do that via Cursor
     public Movie(Cursor cursor) {
         this.movie_id = cursor.getInt(MainActivityFragment.COL_MOVIE_ID);
         this.movie_title = cursor.getString(MainActivityFragment.COL_MOVIE_TITLE);
