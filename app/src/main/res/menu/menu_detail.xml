@@ -1,9 +1,18 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".ui.DetailActivity" >
-    <item android:id="@+id/action_settings"
-        android:title="@string/action_settings"
-        android:orderInCategory="100"
-        app:showAsAction="never" />
+    tools:context="com.wordpress.electron0zero.popularmovies.ui.DetailActivity">
+
+    <item
+        android:id="@+id/action_fav"
+        android:icon="@drawable/ic_favorite_border_black_24dp"
+        app:showAsAction="always"
+        android:title="@string/action_fav">
+    </item>
+    <item
+        android:id="@+id/action_share"
+        android:icon="@drawable/ic_share_black_24dp"
+        app:showAsAction="ifRoom"
+        android:title="@string/action_share">
+    </item>
 </menu>

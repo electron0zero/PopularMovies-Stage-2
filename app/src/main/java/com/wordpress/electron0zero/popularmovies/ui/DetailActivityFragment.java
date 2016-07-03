@@ -1,11 +1,15 @@
 package com.wordpress.electron0zero.popularmovies.ui;
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v7.widget.CardView;
+import android.support.v7.widget.ShareActionProvider;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -19,15 +23,26 @@ import android.widget.Toast;
 
 
 import com.linearlistview.LinearListView;
+import com.squareup.picasso.Picasso;
 import com.wordpress.electron0zero.popularmovies.R;
 import com.wordpress.electron0zero.popularmovies.Utility;
 import com.wordpress.electron0zero.popularmovies.custom_adapters.ReviewAdapter;
 import com.wordpress.electron0zero.popularmovies.custom_adapters.TrailerAdapter;
-import com.wordpress.electron0zero.popularmovies.model.Movie;
-import com.wordpress.electron0zero.popularmovies.model.Review;
-import com.wordpress.electron0zero.popularmovies.model.Trailer;
-import com.wordpress.electron0zero.popularmovies.FetchDataTasks.FetchTrailers;
+import com.wordpress.electron0zero.popularmovies.data.MovieContract;
+import com.wordpress.electron0zero.popularmovies.data_objects.Movie;
+import com.wordpress.electron0zero.popularmovies.data_objects.Review;
+import com.wordpress.electron0zero.popularmovies.data_objects.Trailer;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,9 +51,13 @@ import java.util.List;
  */
 public class DetailActivityFragment extends Fragment {
 
+    //TAG for Fragment manager
     public static final String TAG = "DetailActivityFragment";
 
+    private static final String LOG_TAG = "DetailActivityFragment";
+
     static final String DETAIL_MOVIE = "DETAIL_MOVIE";
+
 
     private Movie mMovie;
 
@@ -61,6 +80,8 @@ public class DetailActivityFragment extends Fragment {
 
     private Toast mToast;
 
+    private ShareActionProvider mShareActionProvider;
+
     private ScrollView mDetailLayout;
 
     private Trailer mTrailer;
@@ -72,19 +93,124 @@ public class DetailActivityFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // TODO: 02-07-16
+        setHasOptionsMenu(true);
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        // TODO: 02-07-16
+        if (mMovie != null) {
+            inflater.inflate(R.menu.menu_detail, menu);
+            Log.d(LOG_TAG, "detail Menu created");
+
+            final MenuItem action_fav = menu.findItem(R.id.action_fav);
+            MenuItem action_share = menu.findItem(R.id.action_share);
+
+            //set proper icon on toolbar for favored movies
+            new AsyncTask<Void, Void, Integer>() {
+                @Override
+                protected Integer doInBackground(Void... params) {
+                    return Utility.isFavored(getActivity(), mMovie.getMovie_id());
+                }
+
+                @Override
+                protected void onPostExecute(Integer isFavored) {
+                    action_fav.setIcon(isFavored == 1 ?
+                            R.drawable.ic_favorite_black_24dp :
+                            R.drawable.ic_favorite_border_black_24dp);
+                }
+            }.execute();
+
+//            mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(action_share);
+//            if (mTrailer != null) {
+//                mShareActionProvider.setShareIntent(shareTrailer());
+//            }
+
+        }
+
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        return super.onOptionsItemSelected(item);
-        // TODO: 02-07-16
+    public boolean onOptionsItemSelected(final MenuItem item) {
+        int id = item.getItemId();
+        switch (id) {
+            case R.id.action_fav:
+                if (mMovie != null) {
+                    // check if movie is favored or not
+                    new AsyncTask<Void, Void, Integer>() {
+
+                        @Override
+                        protected Integer doInBackground(Void... params) {
+                            return Utility.isFavored(getActivity(), mMovie.getMovie_id());
+                        }
+
+                        @Override
+                        protected void onPostExecute(Integer isFavored) {
+                            // if it is in favorites
+                            if (isFavored == 1) {
+                                // delete from favorites
+                                new AsyncTask<Void, Void, Integer>() {
+                                    @Override
+                                    protected Integer doInBackground(Void... params) {
+                                        return getActivity().getContentResolver().delete(
+                                                MovieContract.FavEntry.CONTENT_URI,
+                                                MovieContract.FavEntry.COLUMN_MOVIE_ID + " = ?",
+                                                new String[]{Integer.toString(mMovie.getMovie_id())}
+                                        );
+                                    }
+
+                                    @Override
+                                    protected void onPostExecute(Integer rowsDeleted) {
+                                        item.setIcon(R.drawable.ic_favorite_border_black_24dp);
+                                        if (mToast != null) {
+                                            mToast.cancel();
+                                        }
+                                        mToast = Toast.makeText(getActivity(),
+                                                getString(R.string.removed_from_favorites), Toast.LENGTH_SHORT);
+                                        mToast.show();
+                                    }
+                                }.execute();
+                            }
+                            // if it is not in favorites
+                            else {
+                                // add to favorites
+                                new AsyncTask<Void, Void, Uri>() {
+                                    @Override
+                                    protected Uri doInBackground(Void... params) {
+                                        ContentValues values = new ContentValues();
+
+                                        values.put(MovieContract.FavEntry.COLUMN_MOVIE_ID, mMovie.getMovie_id());
+                                        values.put(MovieContract.FavEntry.COLUMN_MOVIE_TITLE, mMovie.getMovie_title());
+                                        values.put(MovieContract.FavEntry.COLUMN_RELEASE_DATE, mMovie.getRelease_date());
+                                        values.put(MovieContract.FavEntry.COLUMN_POSTER_PATH, mMovie.getPoster_path());
+                                        values.put(MovieContract.FavEntry.COLUMN_VOTE_AVERAGE, mMovie.getVote_avg());
+                                        values.put(MovieContract.FavEntry.COLUMN_PLOT, mMovie.getPlot());
+
+                                        return getActivity().getContentResolver().insert(MovieContract.FavEntry.CONTENT_URI, values);
+                                    }
+
+                                    @Override
+                                    protected void onPostExecute(Uri returnUri) {
+                                        item.setIcon(R.drawable.ic_favorite_black_24dp);
+                                        if (mToast != null) {
+                                            mToast.cancel();
+                                        }
+                                        mToast = Toast.makeText(getActivity(), getString(R.string.added_to_favorites), Toast.LENGTH_SHORT);
+                                        mToast.show();
+                                    }
+                                }.execute();
+                            }
+                        }
+                    }.execute();
+                }
+                return true;
+
+            case R.id.action_share:
+                //share movie trailer
+                shareTrailer();
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override
@@ -94,7 +220,7 @@ public class DetailActivityFragment extends Fragment {
         Bundle arguments = getArguments();
 
         if (arguments != null) {
-            mMovie = arguments.getParcelable(DetailActivityFragment.DETAIL_MOVIE);
+            mMovie = arguments.getParcelable(DETAIL_MOVIE);
         }
 
         View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
@@ -122,8 +248,9 @@ public class DetailActivityFragment extends Fragment {
         mTrailerAdapter = new TrailerAdapter(getActivity(), new ArrayList<Trailer>());
         mTrailersView.setAdapter(mTrailerAdapter);
 
-        //view Trailer in other app that user choose for playing Youtube Videos.
-        //using explicit intent for
+        //view Trailer in other app that user has chosen for playing Youtube Videos.
+        //Use explicit intent with ACTION_VIEW and URI as Data
+        //this will launch user youtube trailer on which user clicked into preferred app
         mTrailersView.setOnItemClickListener(new LinearListView.OnItemClickListener() {
             @Override
             public void onItemClick(LinearListView parent, View view, int position, long id) {
@@ -141,8 +268,8 @@ public class DetailActivityFragment extends Fragment {
 
         if (mMovie != null) {
             String poster_url = Utility.buildPosterUrl(mMovie.getPoster_path());
-            //show that image with picasso
-            // TODO: 01-07-16  show image
+            //load poster with picasso
+            Picasso.with(getContext()).load(poster_url).into(mPosterView);
 
             mMovieTitileView.setText(mMovie.getMovie_title());
             mPlotView.setText(mMovie.getPlot());
@@ -160,53 +287,271 @@ public class DetailActivityFragment extends Fragment {
             //fetch trailers with passing movie_id
             new FetchTrailers().execute(Integer.toString(mMovie.getMovie_id()));
             //fetch reviews with passing movie_id
-            new FetchTrailers().execute(Integer.toString(mMovie.getMovie_id()));
+            new FetchReviews().execute(Integer.toString(mMovie.getMovie_id()));
         }
     }
 
-    private Intent createShareMovieIntent() {
-        Intent shareIntent = new Intent(Intent.ACTION_SEND);
-        shareIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
-        shareIntent.setType("text/plain");
-        shareIntent.putExtra(Intent.EXTRA_TEXT, mMovie.getMovie_title() + " " +
-                "http://www.youtube.com/watch?v=" + mTrailer.getKey()
-                + "  Shared Via Popular Movies App, Data is Sourced form themoviedb.org" );
-        return shareIntent;
+    //created an intent to share first movie trailer from list of trailers
+    private void shareTrailer() {
+
+        if (mTrailer != null) {
+            Intent sendIntent = new Intent();
+            sendIntent.setAction(Intent.ACTION_SEND);
+            sendIntent.putExtra(Intent.EXTRA_TEXT, mMovie.getMovie_title() + "\n" +
+                    "http://www.youtube.com/watch?v=" + mTrailer.getKey()
+                    + "\n'Shared Via Popular Movies App, Data is Sourced form http://themoviedb.org/' ");
+            sendIntent.setType("text/plain");
+
+            startActivity(Intent.createChooser(sendIntent, "Share Using"));
+        }else {
+            if (mToast != null) {
+                mToast.cancel();
+            }
+            mToast = Toast.makeText(getActivity(), "Wait for Trailers to Load", Toast.LENGTH_SHORT);
+            mToast.show();
+        }
+
     }
 
-    public void ShowTrailerCardView(List<Trailer> trailers){
-        if (trailers != null) {
-            //when we have trailers
-            if (trailers.size() > 0) {
-                mTrailersCardview.setVisibility(View.VISIBLE);
-                if (mTrailerAdapter != null) {
-                    mTrailerAdapter.remove();
-                    for (Trailer trailer : trailers) {
-                        mTrailerAdapter.add(trailer);
-                    }
+
+    public class FetchReviews extends AsyncTask<String, Void, List<Review>> {
+
+        private final String LOG_TAG = "FetchReviews";
+
+        @Override
+        protected void onPreExecute() {
+            Log.d(LOG_TAG, "Fetch reviews Started");
+            super.onPreExecute();
+        }
+
+        @Override
+        protected List<Review> doInBackground(String... params) {
+
+            if (params.length == 0){
+                Log.d(LOG_TAG, "Died - total Params length is 0");
+                return null;
+            }
+
+            HttpURLConnection httpURLConnection = null;
+            BufferedReader reader = null;
+
+            String jsonResponseString = null;
+
+            try {
+                //params[0] is movie_id
+                final String BASE_URL = "http://api.themoviedb.org/3/movie/" + params[0] + "/reviews";
+                final String API_KEY_PARAM = "api_key";
+                Uri builtUri = Uri.parse(BASE_URL).buildUpon()
+                        .appendQueryParameter(API_KEY_PARAM, getString(R.string.API_KEY) )
+                        .build();
+
+                URL url = new URL(builtUri.toString());
+
+                httpURLConnection = (HttpURLConnection) url.openConnection();
+                httpURLConnection.setRequestMethod("GET");
+                httpURLConnection.connect();
+
+                InputStream inputStream = httpURLConnection.getInputStream();
+                StringBuffer buffer = new StringBuffer();
+                if (inputStream == null) {
+                    return null;
+                }
+                reader = new BufferedReader(new InputStreamReader(inputStream));
+
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
+                    // But it does make debugging a *lot* easier if you print out the completed
+                    // buffer for debugging.
+                    buffer.append(line + "\n");
                 }
 
-                // TODO: 02-07-16  handle trailer sharing
-                //mTrailer = trailers.get(0);
-                //if (mShareActionProvider != null) {
-                //    mShareActionProvider.setShareIntent(createShareMovieIntent());
-                //}
-            }
-        }
-    }
+                if (buffer.length() == 0) {
+                    return null;
+                }
+                jsonResponseString = buffer.toString();
 
-    public void ShowReviewCardView(List<Review> reviews){
-        if (reviews != null) {
-            //if we have reviews
-            if (reviews.size() > 0) {
-                mReviewsCardview.setVisibility(View.VISIBLE);
-                if (mReviewAdapter != null) {
-                    mReviewAdapter.remove();
-                    for (Review review : reviews) {
-                        mReviewAdapter.add(review);
+            } catch (IOException e){
+                Log.d(LOG_TAG,"Error " + e);
+                return null;
+
+            } finally {
+                //do housekeeping stuff, i mean clean up
+                if (httpURLConnection != null){
+                    httpURLConnection.disconnect();
+                }
+                if (reader != null){
+                    try {
+                        reader.close();
+                    } catch (IOException e){
+                        Log.d(LOG_TAG, "Error " + e );
+                    }
+                }
+            }
+
+            try {
+                return getReviewsFromJson(jsonResponseString);
+            } catch (JSONException e){
+                Log.d(LOG_TAG,"Error " + e);
+            }
+            //this will be returned in case we failed everywhere.
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(List<Review> reviews) {
+            //we got reviews so let's show them
+            if (reviews != null) {
+                //if we have reviews
+                if (reviews.size() > 0) {
+                    mReviewsCardview.setVisibility(View.VISIBLE);
+                    if (mReviewAdapter != null) {
+                        mReviewAdapter.remove();
+                        for (Review review : reviews) {
+                            mReviewAdapter.add(review);
+                        }
                     }
                 }
             }
         }
+
+        private List<Review> getReviewsFromJson(String jsonStr) throws JSONException {
+            JSONObject reviewJson = new JSONObject(jsonStr);
+            JSONArray reviewArray = reviewJson.getJSONArray("results");
+
+            List<Review> results = new ArrayList<>();
+
+            for(int i = 0; i < reviewArray.length(); i++) {
+                JSONObject review = reviewArray.getJSONObject(i);
+                results.add(new Review(review));
+            }
+
+            return results;
+        }
     }
+
+    public class FetchTrailers extends AsyncTask<String, Void, List<Trailer>> {
+        private final String LOG_TAG = "FetchTrailers";
+
+        @Override
+        protected void onPreExecute() {
+            Log.d(LOG_TAG, "Fetch Trailers started executing");
+            super.onPreExecute();
+        }
+
+        @Override
+        protected List<Trailer> doInBackground(String... params) {
+
+            if (params.length == 0 ){
+                Log.d(LOG_TAG,"Died - total params length is 0");
+                return null;
+            }
+
+            HttpURLConnection httpURLConnection = null;
+            BufferedReader reader = null;
+
+            String jsonResponseString = null;
+
+            try {
+                //params[0] is movie_id
+                final String BASE_URL = "http://api.themoviedb.org/3/movie/" + params[0] + "/videos";
+                final String API_KEY_PARAM = "api_key";
+                Uri builtUri = Uri.parse(BASE_URL).buildUpon()
+                        .appendQueryParameter(API_KEY_PARAM, getString(R.string.API_KEY))
+                        .build();
+
+                URL url = new URL(builtUri.toString());
+
+                httpURLConnection = (HttpURLConnection) url.openConnection();
+                httpURLConnection.setRequestMethod("GET");
+                httpURLConnection.connect();
+
+                InputStream inputStream = httpURLConnection.getInputStream();
+                StringBuffer buffer = new StringBuffer();
+                if (inputStream == null) {
+                    return null;
+                }
+                reader = new BufferedReader(new InputStreamReader(inputStream));
+
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
+                    // But it does make debugging a *lot* easier if you print out the completed
+                    // buffer for debugging.
+                    buffer.append(line + "\n");
+                }
+
+                if (buffer.length() == 0) {
+                    return null;
+                }
+                jsonResponseString = buffer.toString();
+
+            } catch (IOException e){
+                Log.d(LOG_TAG,"Error " + e);
+                return null;
+            }
+            finally {
+                //do house keeping, i mean clean up
+                if (httpURLConnection != null){
+                    httpURLConnection.disconnect();
+                }
+                if (reader != null){
+                    try {
+                        reader.close();
+                    } catch (IOException e) {
+                        Log.d(LOG_TAG,"Error " + e);
+                    }
+                }
+            }
+
+            try {
+                return getTrailersFromJson(jsonResponseString);
+            } catch (JSONException e) {
+                Log.d(LOG_TAG, "Error " + e );
+            }
+
+            //this will be returned in case we failed everywhere.
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(List<Trailer> trailers) {
+            //we got trailers so let's show them
+            if (trailers != null) {
+                //when we have trailers
+                if (trailers.size() > 0) {
+                    mTrailersCardview.setVisibility(View.VISIBLE);
+                    if (mTrailerAdapter != null) {
+                        mTrailerAdapter.remove();
+                        for (Trailer trailer : trailers) {
+                            mTrailerAdapter.add(trailer);
+                        }
+                    }
+
+                    //put the first Trailer into mTrailer, this will be used while sharing.
+                    //also if this is null means we don't have a Trailer to share while sharing
+                    mTrailer = trailers.get(0);
+                }
+            }
+        }
+
+        private List<Trailer> getTrailersFromJson(String jsonStr) throws JSONException {
+            JSONObject trailerJson = new JSONObject(jsonStr);
+            JSONArray trailerArray = trailerJson.getJSONArray("results");
+
+            List<Trailer> results = new ArrayList<>();
+
+            for(int i = 0; i < trailerArray.length(); i++) {
+                JSONObject trailer = trailerArray.getJSONObject(i);
+                // Only show Trailers which are on Youtube
+                if (trailer.getString("site").contentEquals("YouTube")) {
+                    Trailer trailerModel = new Trailer(trailer);
+                    results.add(trailerModel);
+                }
+            }
+            //returns a list of trailers that are on youtube
+            return results;
+        }
+    }
+
 }

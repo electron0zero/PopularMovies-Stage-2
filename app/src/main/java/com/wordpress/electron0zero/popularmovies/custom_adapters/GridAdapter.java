@@ -1,6 +1,7 @@
 package com.wordpress.electron0zero.popularmovies.custom_adapters;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,8 +9,10 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
 import com.wordpress.electron0zero.popularmovies.R;
-import com.wordpress.electron0zero.popularmovies.model.Movie;
+import com.wordpress.electron0zero.popularmovies.Utility;
+import com.wordpress.electron0zero.popularmovies.data_objects.Movie;
 
 import java.util.List;
 
@@ -84,12 +87,18 @@ public class GridAdapter extends BaseAdapter {
 
         final Movie movie = getItem(position);
 
-        String poster_url = "http://image.tmdb.org/t/p/w185" + movie.getPoster_path();
+        String poster_url = Utility.buildPosterUrl(movie.getPoster_path());
+
+        //Log.d("GridAdaptor",poster_url);
 
         viewHolder = (MovieViewHolder) view.getTag();
 
-        // TODO: 01-07-16 handle imga ewith picasso
-        // TODO: 01-07-16  set Movie Name text view for displaying movie name
+        //load poster image into image view
+        Picasso.with(getmContext()).load(poster_url).into(viewHolder.imageView);
+        //Log.d("GridAdaptor","Loading Poster Image IN adaptor");
+        //set movie title text into view
+        viewHolder.titleView.setText(movie.getMovie_title());
+        //Log.d("GridAdaptor","Setting text in Grid Adaptor");
 
         return view;
     }
@@ -101,7 +110,6 @@ public class GridAdapter extends BaseAdapter {
         public MovieViewHolder(View view) {
             imageView = (ImageView) view.findViewById(R.id.grid_item_image);
             titleView = (TextView) view.findViewById(R.id.grid_item_title);
-            // TODO: 01-07-16 handle this from layout
         }
     }
 }

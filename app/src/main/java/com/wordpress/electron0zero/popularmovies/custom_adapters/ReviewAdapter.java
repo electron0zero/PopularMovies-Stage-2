@@ -9,7 +9,7 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.wordpress.electron0zero.popularmovies.R;
-import com.wordpress.electron0zero.popularmovies.model.Review;
+import com.wordpress.electron0zero.popularmovies.data_objects.Review;
 
 import java.util.List;
 

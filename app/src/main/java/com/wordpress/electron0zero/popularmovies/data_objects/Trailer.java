@@ -1,4 +1,4 @@
-package com.wordpress.electron0zero.popularmovies.model;
+package com.wordpress.electron0zero.popularmovies.data_objects;
 
 
 import org.json.JSONException;

@@ -22,15 +22,15 @@ public class MovieDbHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         //create database tables here
-        final String SQL_CREATE_FAV_TABLE = "CREATE TABLE " + MovieContract.FavEntry.TABLE_NAME + " (" +
-                MovieContract.FavEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+        final String SQL_CREATE_FAV_TABLE = "CREATE TABLE " + MovieContract.FavEntry.TABLE_NAME + " ( " +
+                MovieContract.FavEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 MovieContract.FavEntry.COLUMN_MOVIE_ID + " TEXT UNIQUE NOT NULL, " +
                 MovieContract.FavEntry.COLUMN_MOVIE_TITLE + " TEXT NOT NULL, " +
                 MovieContract.FavEntry.COLUMN_RELEASE_DATE + " TEXT NOT NULL, " +
                 MovieContract.FavEntry.COLUMN_POSTER_PATH + " TEXT NOT NULL, " +
                 MovieContract.FavEntry.COLUMN_VOTE_AVERAGE + " REAL NOT NULL, " +
-                MovieContract.FavEntry.COLUMN_PLOT + " TEXT NOT NULL, " +
-                " );";
+                MovieContract.FavEntry.COLUMN_PLOT + " TEXT NOT NULL " +
+                ");";
 
         //gotta do logging
         Log.d(LOG_TAG,SQL_CREATE_FAV_TABLE);

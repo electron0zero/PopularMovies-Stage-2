@@ -9,8 +9,9 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
 import com.wordpress.electron0zero.popularmovies.R;
-import com.wordpress.electron0zero.popularmovies.model.Trailer;
+import com.wordpress.electron0zero.popularmovies.data_objects.Trailer;
 
 import java.util.List;
 
@@ -77,8 +78,10 @@ public class TrailerAdapter extends BaseAdapter {
         viewHolder = (TrailerViewHolder) view.getTag();
 
         String trailer_thumb_url = "http://img.youtube.com/vi/" + trailer.getKey() + "/0.jpg";
-        // TODO: 01-07-16 set that thumb via picasso
-        // TODO: 01-07-16 set trailer text
+        //load trailer thumbnail into image view with picasso
+        Picasso.with(getmContext()).load(trailer_thumb_url).into(viewHolder.imageView);
+        //set trailer name (title)
+        viewHolder.nameView.setText(trailer.getName());
 
         return view;
     }

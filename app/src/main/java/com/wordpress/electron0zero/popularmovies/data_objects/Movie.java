@@ -1,10 +1,8 @@
-package com.wordpress.electron0zero.popularmovies.model;
+package com.wordpress.electron0zero.popularmovies.data_objects;
 
 import android.database.Cursor;
 import android.os.Parcel;
 import android.os.Parcelable;
-
-import com.wordpress.electron0zero.popularmovies.ui.MainActivityFragment;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,8 +14,16 @@ public class Movie implements Parcelable {
     private String movie_title; // original_title
     private String release_date; // release_date
     private String poster_path; // poster_path
-    private int vote_avg; // vote_average
+    private String vote_avg; // vote_average
     private String plot; //plot
+
+    public static final int COL_ID = 0;
+    public static final int COL_MOVIE_ID = 1;
+    public static final int COL_MOVIE_TITLE = 2;
+    public static final int COL_RELEASE_DATE = 3;
+    public static final int COL_POSTER_PATH = 4;
+    public static final int COL_VOTE_AVERAGE = 5;
+    public static final int COL_PLOT = 6;
 
     //movie() is overloaded
     public Movie() {
@@ -29,19 +35,19 @@ public class Movie implements Parcelable {
         this.movie_title = movie.getString("original_title");
         this.release_date = movie.getString("release_date");
         this.poster_path = movie.getString("poster_path");
-        this.vote_avg = movie.getInt("vote_average");
+        this.vote_avg = movie.getString("vote_average");
         this.plot = movie.getString("overview");
 
     }
 
     //when we ask for favorite movies we will do that via Cursor
     public Movie(Cursor cursor) {
-        this.movie_id = cursor.getInt(MainActivityFragment.COL_MOVIE_ID);
-        this.movie_title = cursor.getString(MainActivityFragment.COL_MOVIE_TITLE);
-        this.release_date = cursor.getString(MainActivityFragment.COL_RELEASE_DATE);
-        this.poster_path = cursor.getString(MainActivityFragment.COL_POSTER_PATH);
-        this.vote_avg = cursor.getInt(MainActivityFragment.COL_VOTE_AVERAGE);
-        this.plot = cursor.getString(MainActivityFragment.COL_POLT);
+        this.movie_id = cursor.getInt(COL_MOVIE_ID);
+        this.movie_title = cursor.getString(COL_MOVIE_TITLE);
+        this.release_date = cursor.getString(COL_RELEASE_DATE);
+        this.poster_path = cursor.getString(COL_POSTER_PATH);
+        this.vote_avg = cursor.getString(COL_VOTE_AVERAGE);
+        this.plot = cursor.getString(COL_PLOT);
 
     }
 
@@ -57,7 +63,7 @@ public class Movie implements Parcelable {
         dest.writeString(movie_title);
         dest.writeString(release_date);
         dest.writeString(poster_path);
-        dest.writeInt(vote_avg);
+        dest.writeString(vote_avg);
         dest.writeString(plot);
     }
 
@@ -77,7 +83,7 @@ public class Movie implements Parcelable {
         movie_title = in.readString();
         release_date = in.readString();
         poster_path = in.readString();
-        vote_avg = in.readInt();
+        vote_avg = in.readString();
         plot = in.readString();
     }
 
@@ -98,7 +104,7 @@ public class Movie implements Parcelable {
         return plot;
     }
 
-    public int getVote_avg() {
+    public String getVote_avg() {
         return vote_avg;
     }
 
