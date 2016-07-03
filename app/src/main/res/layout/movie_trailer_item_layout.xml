@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="@dimen/movie_detail_trailers_height"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/trailer_padding"
+    android:paddingRight="@dimen/trailer_padding">
 
     <ImageView
         android:id="@+id/trailer_image"
@@ -13,11 +16,11 @@
     <TextView
         android:id="@+id/trailer_name"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:textSize="@dimen/text_size"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"
         android:padding="5dp"
-        android:gravity="bottom|left"
+        android:layout_alignParentBottom="true"
         android:textColor="@android:color/white"
-        android:textStyle="bold" />
+        android:background="#80000000" />
 
-</FrameLayout>
+</RelativeLayout>

@@ -4,11 +4,10 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.os.Bundle;
 import android.support.v7.widget.CardView;
-import android.support.v7.widget.ShareActionProvider;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -20,7 +19,6 @@ import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 
 import com.linearlistview.LinearListView;
 import com.squareup.picasso.Picasso;
@@ -58,7 +56,6 @@ public class DetailActivityFragment extends Fragment {
 
     static final String DETAIL_MOVIE = "DETAIL_MOVIE";
 
-
     private Movie mMovie;
 
     //All the Views for detail Fragment
@@ -80,8 +77,6 @@ public class DetailActivityFragment extends Fragment {
 
     private Toast mToast;
 
-    private ShareActionProvider mShareActionProvider;
-
     private ScrollView mDetailLayout;
 
     private Trailer mTrailer;
@@ -89,11 +84,11 @@ public class DetailActivityFragment extends Fragment {
     public DetailActivityFragment() {
     }
 
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+
     }
 
     @Override
@@ -119,14 +114,7 @@ public class DetailActivityFragment extends Fragment {
                             R.drawable.ic_favorite_border_black_24dp);
                 }
             }.execute();
-
-//            mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(action_share);
-//            if (mTrailer != null) {
-//                mShareActionProvider.setShareIntent(shareTrailer());
-//            }
-
         }
-
     }
 
     @Override
@@ -167,6 +155,10 @@ public class DetailActivityFragment extends Fragment {
                                         mToast = Toast.makeText(getActivity(),
                                                 getString(R.string.removed_from_favorites), Toast.LENGTH_SHORT);
                                         mToast.show();
+                                        //this refresh the view by invalidating it
+                                        //we need this so in tablet UI when we are at fav. screen
+                                        //after changing Fav setting view should remove unfavored movie
+                                        //getActivity().findViewById(R.id.gridview_movies).invalidate();
                                     }
                                 }.execute();
                             }
@@ -194,8 +186,13 @@ public class DetailActivityFragment extends Fragment {
                                         if (mToast != null) {
                                             mToast.cancel();
                                         }
-                                        mToast = Toast.makeText(getActivity(), getString(R.string.added_to_favorites), Toast.LENGTH_SHORT);
+                                        mToast = Toast.makeText(getActivity(),
+                                                getString(R.string.added_to_favorites), Toast.LENGTH_SHORT);
                                         mToast.show();
+                                        //this refresh the view by invalidating it
+                                        //we need this so in tablet UI when we are at fav. screen
+                                        //after changing Fav setting view should remove unfavored movie
+                                        //getActivity().findViewById(R.id.gridview_movies).invalidate();
                                     }
                                 }.execute();
                             }
@@ -431,6 +428,7 @@ public class DetailActivityFragment extends Fragment {
     }
 
     public class FetchTrailers extends AsyncTask<String, Void, List<Trailer>> {
+
         private final String LOG_TAG = "FetchTrailers";
 
         @Override

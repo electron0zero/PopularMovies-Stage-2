@@ -3,9 +3,10 @@ package com.wordpress.electron0zero.popularmovies.ui;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -82,12 +83,14 @@ public class MainActivityFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+
     }
 
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_main, menu);
+
         Log.d(LOG_TAG,"Options main Menu created");
     }
 
@@ -289,8 +292,6 @@ public class MainActivityFragment extends Fragment {
     public class FetchFav extends AsyncTask<String, Void, List<Movie>> {
 
         private Context mContext;
-
-
 
         //constructor
         public FetchFav(Context context) {
