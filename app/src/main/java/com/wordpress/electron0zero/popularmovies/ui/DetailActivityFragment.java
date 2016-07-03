@@ -155,10 +155,6 @@ public class DetailActivityFragment extends Fragment {
                                         mToast = Toast.makeText(getActivity(),
                                                 getString(R.string.removed_from_favorites), Toast.LENGTH_SHORT);
                                         mToast.show();
-                                        //this refresh the view by invalidating it
-                                        //we need this so in tablet UI when we are at fav. screen
-                                        //after changing Fav setting view should remove unfavored movie
-                                        //getActivity().findViewById(R.id.gridview_movies).invalidate();
                                     }
                                 }.execute();
                             }
@@ -189,10 +185,6 @@ public class DetailActivityFragment extends Fragment {
                                         mToast = Toast.makeText(getActivity(),
                                                 getString(R.string.added_to_favorites), Toast.LENGTH_SHORT);
                                         mToast.show();
-                                        //this refresh the view by invalidating it
-                                        //we need this so in tablet UI when we are at fav. screen
-                                        //after changing Fav setting view should remove unfavored movie
-                                        //getActivity().findViewById(R.id.gridview_movies).invalidate();
                                     }
                                 }.execute();
                             }
