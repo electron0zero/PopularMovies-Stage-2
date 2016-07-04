@@ -27,9 +27,9 @@ Put Your API KEY in (\app\src\main\res\values\)**strings.xml** file at this line
 
 <p align="center">
 <img src="https://raw.githubusercontent.com/electron0zero/PopularMovies-Stage-2/master/Screenshots/1.png" height="300">
-<img src="https://raw.githubusercontent.com/electron0zero/PopularMovies-Stage-2/master/Screenshots/2.png" height="300">
+<img src="https://raw.githubusercontent.com/electron0zero/PopularMovies-Stage-2/master/Screenshots/2.png" height="180">
 <img src="https://raw.githubusercontent.com/electron0zero/PopularMovies-Stage-2/master/Screenshots/3.png" height="300">
-<img src="https://raw.githubusercontent.com/electron0zero/PopularMovies-Stage-2/master/Screenshots/4.png" height="300">
+<img src="https://raw.githubusercontent.com/electron0zero/PopularMovies-Stage-2/master/Screenshots/4.png" height="180">
 <img src="https://raw.githubusercontent.com/electron0zero/PopularMovies-Stage-2/master/Screenshots/5.png" height="300">
 <img src="https://raw.githubusercontent.com/electron0zero/PopularMovies-Stage-2/master/Screenshots/6.png" height="300">
 <img src="https://raw.githubusercontent.com/electron0zero/PopularMovies-Stage-2/master/Screenshots/7.png" height="300">
